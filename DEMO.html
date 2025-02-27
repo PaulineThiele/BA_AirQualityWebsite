@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf-8">
+        <TITLE>DEMO-HTML MAP</TITLE>
+        <link rel="icon" href="/images/favicon.jpg">
+        <link rel="stylesheet" type="text/css" href="demo.css" media="all">
+    </head>
+    <body>
+        <!--als meins markieren, vielleicht runter schieben-->
+        <div id="air_legend"></div>
+        <div id="searchbar">
+            <input aria-label="Search for station name" id="searchInput" type="text" placeholder="Search for station name ...">
+            <ul id="searchResults"></ul>
+        </div>
+
+        <div id="map"></div>
+
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div id="popup-content"></div>
+        </div>
+
+        <!--by Pauline Thiele begin-->
+        <div id="popup-AQ" class="ol-popup">
+            <a href="#" id="popup-closer-AQ" class="ol-popup-closer"></a>
+            <div >
+                <section  class="dialogContent">
+                    <h1>
+                        Air Quality Details
+                    </h1>
+                </section>
+
+                <section id="popUpSection">           
+                    <table class="aq_value_table">
+                        <tr>
+                            <th colspan="2">PM<sub>2,5</sub> [µg/m<sup>3</sup>]</th>
+                            <th colspan="2">PM<sub>10</sub> [µg/m<sup>3</sup>]</th>
+                            <th>NO<sub>2</sub> [µg/m<sup>3</sup>]</th>
+                            <th>CO [mg/m<sup>3</sup>]</th>
+                        </tr>
+                        <tr>
+                            <th>SDS011</th>
+                            <th class="tb_child_even">HM3301</th>
+                            <th class="tb_child_uneven">SDS011</th>
+                            <th id="dailogHM3301">HM3301</th>
+                        </tr>
+                        <tr id="dialogLastRow">                             
+                        </tr> 
+                    </table>
+                </section>
+                    
+                <section>                    
+                    <button value="default" class="buttons" id="infoBtn" onclick="openSidebarHelper()">More Information</button>
+                </section>
+            </div>
+        </div>
+
+        <div id="sidebar" class="sidebar">
+            <div id="sidebar-content">
+                <section id="headerSidebar">
+                    <a href="javascript:void(0)" class="closebtn" id="sidebar_closer" onclick="closeSidebarHelper()">&times;</a>
+                </section>
+                
+                <section>
+                    <h4 class="indent_h">Location: </h4>
+                    <div class="indent" id="locationSidebar"> </div>
+                    <hr class="hr_sb">
+                </section>
+                
+                <section>
+                    <h4 class="indent_h">Air quality values:</h4>
+                    <div class="indent" id="aqvSidebar"> </div>
+                    <hr class="hr_sb">
+                </section>
+                
+                <section>
+                    <h4 class="indent_h">Air Data:</h4>
+                    <div class="indent" id="airDataSidebar"> </div>
+                    <hr class="hr_sb">
+                </section>
+                
+                <section>
+                    <h4 class="indent_h">Historical Air Quality Data: </h4>
+                    <div class="chart" id="chart">   
+                        <h5>Select the visible measurement period for the diagram:</h5> 
+                        
+                        <div id="chartTimePeriod">
+                            <label id="l_startdate">Start date: </label>
+                            <input onchange="filterDataHelper()" type="datetime-local" id="startdate" value="">
+                            <label id="l_enddate">End date: </label>
+                            <input onchange="filterDataHelper()" type="datetime-local" id="enddate" value=""> 
+                        
+                            <div id="error_chart" class="error_div">
+                                <p id="error_time">The end time must be greater than the start time.</p>
+                                <p id="error_time_1h">Between the start and end time must be 1 hour.</p>
+                            </div>
+                        </div>                    
+                    </div>
+                    <hr class="hr_sb">
+
+                    <div id="chartlegend">
+                        <h5>Select the visible air pollutant for the diagram:</h5>
+                        <input id="selectallcheckbox" type="checkbox" onclick="updateAllHelper(this)" checked="">Select all <br>
+                        <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="0"> PM<sub>2,5</sub> Sensor: SDS011 <br>
+                        <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="1"> PM<sub>10</sub> Sensor: SDS011 <br>
+                        <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="2"> PM<sub>2,5</sub> Sensor: HM3301 <br>
+                        <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="3"> PM<sub>10</sub> Sensor: HM3301 <br>
+                        <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="4"> NO<sub>2</sub> Sensor: G-Mehkanal-Gassensor V2 <br> 
+                        <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="5"> CO Sensor: G-Mehkanal-Gassensor V2 
+                    </div> 
+                    <hr class="hr_sb"> 
+
+                    <h5>Download the visible diagram or visible diagram data:</h5>
+                    <div id="download">                        
+                        <button class="buttons" id="PNGDownload" onclick="downloadAsPNGHelper()">Download diagram as png</button>
+                        <button class="buttons" id="JSONDownload" onclick="downloadAsJSONHelper()">Download diagram data as json</button> <br>
+                        <p class="error_div" id="error_buttons">Download not possible. Please handle the other error befor starting the download.</p> 
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <script src="aq_legend.js"></script>
+        <script src="aq_searchbar.js"></script>
+        <script src="sidebar.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!--by Pauline Thiele end-->
+
+        <script src="ol.js"></script>
+        <script src="ol-layerswitcher.js"></script>
+        <link rel="stylesheet" type="text/css" href="ol.css" media="all">
+        <link rel="stylesheet" type="text/css" href="ol-layerswitcher.css" media="all">
+        <script src="demomap.js?"></script>
+        <script>
+            initPopUp();
+        </script>
+    </body>
+</html>
