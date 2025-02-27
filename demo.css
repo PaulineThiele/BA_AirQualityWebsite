@@ -6,8 +6,6 @@ body {margin:0px}
 
 #popup { max-height: 500px;width:550px;overflow-y:auto; }
 
-#popup-AQ{ max-height: 500px;width:550px;}
-
 .mapMarkerInfo{
   width:100%;
   border-collapse:collapse;
@@ -70,15 +68,44 @@ body {margin:0px}
 }
 .ol-popup-closer:after {  content: "✖";} 
 
+.ol-popup-closer:hover {
+  color: red;
+}
+
+
+
+/*Air Quality Popup*/
+#popup-AQ{ 
+  height: 305px;
+  width:550px;
+}
+
 .popupContent {
   margin-left: 15px;
+}
+
+label {
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+#indentlastupdate {
+  position: absolute; /*TODO: blöd, lieber mit flex arbeiten*/
+  right: 0;
+  top: 47px;
+  margin-right: 15px;
+  font-size: 12px;
+}
+
+#indentlastupdate label {
+  margin-bottom: 0;
 }
 
 .aq_value_table {
   width: 60%;
   border-collapse: collapse;
-  margin-top: 10px;
   margin-left: 15px;
+  margin-bottom: 10px;
 }
 
 .aq_value_table th, .aq_value_table td {
@@ -111,14 +138,6 @@ body {margin:0px}
   margin-left: 70px;
 }
 
-#indentlastupdate {
-  position: absolute;
-  right: 0;
-  top: 15px;
-  margin-right: 15px;
-  font-size: 12px;
-}
-
 .buttons {
   color: white;
   background-color:rgba(0,60,136,.9);
@@ -130,11 +149,12 @@ body {margin:0px}
   padding: 10px;
 }
 
-#infobtn {
-  position: absolute;
+#infoBtn {
+  margin-top: 0px;
   bottom: 10px;
   right: 10px;
   z-index: 1000; 
+  float: right;
 }
 
 .buttons:hover {
@@ -142,6 +162,49 @@ body {margin:0px}
   cursor: pointer;
 }
 
+
+
+
+/*TODO: Wo kommt denn das am Besten hin?*/
+.dialogContent {
+
+  border-collapse: collapse;
+  margin-top: 10px;
+  margin-left: 15px;
+}
+
+.dialogTimestamp {
+  position: absolute;
+  right: 0;
+  top: 15px;
+  margin-right: 15px;
+  font-size: 11px;
+}
+
+.aq_div {
+  border: 1px solid;
+  border-radius: 5px;  
+  border-color: black;
+  display: inline-block;
+  margin-left: 7px; 
+  padding: 5px; 
+  height: 20px;
+  margin-top: 0px;
+} 
+
+#textcolor {
+  margin: 0px;
+}
+
+
+
+
+
+
+
+
+
+/*Legend*/
 #air_legend {
   position: absolute;
   width: 150px;
@@ -171,8 +234,8 @@ body {margin:0px}
 }
 
 #air_legend .circle {
-  height: 10px;
-  width: 10px; 
+  height: 13px;
+  width: 13px; 
   border: 1px solid;
   border-radius: 50%;
   margin-right: 10px;
@@ -188,6 +251,10 @@ body {margin:0px}
   cursor: pointer;
   margin-left: -10px;
 }
+
+
+
+
 
 
 /*sidebar*/
@@ -267,13 +334,30 @@ body {margin:0px}
   margin-left: 7px; 
 }
 
+
+
+
+
 /*chart*/
 .chart {
   max-width: 110%;
-  height: 400px; 
+  height: 600px; 
   padding: 20px;
   margin: 0 auto;
-  margin-bottom: 60px;
+  margin-bottom: 120px;
+  /*align-items: flex-start;*/
+}
+
+#chartTimePeriod {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+#startdate, #enddate {
+  width: 150px; 
+  margin-bottom: 0px;
 }
 
 #startdate {
@@ -281,7 +365,39 @@ body {margin:0px}
 }
 
 #l_startdate {
-  margin-left: 20%;
+  margin-left: 10%;
+}
+
+.error_div {
+  border: 2px solid;
+  border-radius: 5px;
+  border-color: rgb(255, 0, 0);
+  background-color: rgb(240, 154, 154);
+  margin-top: 10px;
+  margin-left: 40px;
+  visibility: hidden;
+  width: 80%; 
+  height: 20px;
+  /*position: absolute; */
+  padding-top: 7px; 
+  padding-left: 7px;
+}
+
+#error_chart {
+  padding-bottom: 0px; /*-40*/
+  margin-left: 60px;
+}
+
+#error_time {
+  visibility: hidden;
+  margin-top: 0px;
+  margin-bottom: 15px;
+} 
+
+#error_time_1h {
+  visibility: hidden;
+  margin-top: -32px;
+  /*margin-bottom: 30px;*/
 }
 
 .chart label, .chart input {
@@ -309,16 +425,57 @@ body {margin:0px}
   border-radius: 3px;  /* optional: leicht abgerundete Ecken */
 }
 
+h5 {
+  margin-left: 50px;  
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.chart h5 {
+  margin-left: 30px; 
+}
+
+#chartlegend h5{
+  margin-left: -10px;
+  margin-bottom: 20px;
+}
+
+
+
+
 /*download buttons*/
+#download {
+  margin-bottom: 80px;
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
 #PNGDownload {
-  margin-left: 27%;
+  /*margin-left: 27%;*/
   margin-right: 30px;
 }
 
 #download button {
   margin-top: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 13px;
+} 
+
+#error_buttons {
+  visibility: hidden;
+  padding-bottom: 5px;
+  padding-top: -5px; 
+  margin-left: -50px; 
 }
+
+#error_download {
+  margin-top: 0px;
+}
+
+
+
+
 
 /*search bar*/ 
 #searchbar {
@@ -361,6 +518,7 @@ body {margin:0px}
   text-align: left;
   /*z-index: 1000;
   display: block;*/
+  font-size: 15px;
 }
 
 #searchResults {
@@ -374,6 +532,7 @@ body {margin:0px}
   position: absolute;
   width: 100%;
   z-index: 1000;
+  font-size: 15px;
 }
 
 #searchResults li {
@@ -389,3 +548,34 @@ body {margin:0px}
   background: rgb(202, 202, 202)
 }
 
+
+
+
+
+.popup_values {
+  visibility: hidden;
+  position: absolute;
+  top: 50%;
+  left: 75%;
+  height: 70px;
+  width: 170px;
+  transform: translate(-50%, 0);
+  background-color: rgb(224, 224, 224);
+  color: rgb(0, 0, 0);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  z-index: 1;
+}
+
+.popup_values.show {
+  visibility: visible;
+} 
+
+.category_help {
+  margin-left: 5px; 
+  padding: 5px; 
+  border-radius: 5px;
+  border: 1px solid #818181;
+  background-color: #c2d9e6;
+}

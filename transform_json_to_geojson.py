@@ -2,7 +2,7 @@ import json
 import sys 
 import geojson
 
-with open('half_hour_data_19.12.24-17.01.25_calculated_NO2_CO_kalibration.json') as file:
+with open('hour_data_19.12.24-17.01.25_calculated_NO2_CO_correction.json') as file:
     data =[]
     
     for line in file:
@@ -58,7 +58,7 @@ def param_index (data):
     pm10_HM = pm10_calc(data.get("GM:PM10_Atm", 0))
     pm10_SD = pm10_calc(data.get("SD:PM10", 0))
     no2 = no2_calc(data.get("NO2", 0))
-    co = 0 
+    #co = 0 
     
     dict.update({
         "pm2_5_HM": pm2_5_HM, 
@@ -66,7 +66,7 @@ def param_index (data):
         "pm10_HM": pm10_HM, 
         "pm10_SD": pm10_SD, 
         "no2": no2, 
-        "co": co
+        #"co": co
     })
 
     return dict
@@ -79,10 +79,10 @@ def calc_aqi (data):
 
 additional_properties = {
     "Name": "12345",
-    "Temperatur [°C]": 25.2,
+    "Temperatur [°C]": 4.7,
     "NHN Höhe [m]": 100,
     "Luftdruck [hPa]": 1016.6,
-    "Luftfeuchte [%]": 37.7,
+    "Luftfeuchte [%]": 79.7,
     "UTM-Nord [m]": 5681893.904,
     "UTM-Ost [m]": 490140.608
 }
@@ -97,11 +97,11 @@ geojs={
      "features":[
            {
                 "geometry": {
-                "coordinates": [13.62377300, 52.32196800, 100],
+                "coordinates": [13.621241, 52.324027, 100], #[13.62377300, 52.32196800, 100],
                 "type": "Point"
             },
                 "id": create_ID(d),
-                "properties": {**d, **additional_properties, "Luftqualitätindex": calc_aqi(d), "Parameterindex": param_index(d)}, 
+                "properties": {**d, **additional_properties, "Luftqualitätsindex": calc_aqi(d), "Parameterindex": param_index(d)}, 
                 
                 "srsName": "EPSG:4326",
                 "type": "Feature"
@@ -111,6 +111,6 @@ geojs={
  }
 
 
-with open("created_geodata.json", "w", encoding="utf-8") as output_file:
+with open("hour_created_geodata.json", "w", encoding="utf-8") as output_file:
     geojson.dump(geojs, output_file, indent=4)
     print("GeoJSON created successfully!")

@@ -46,14 +46,14 @@ const smarttrack = new ol.layer.Vector({
   source: vectorSource,
   title: "SmartTrack WFS"
 });
-console.log(vectorSource.getFeatures());
+//console.log(vectorSource.getFeatures());
 
 overlayGroup.getLayers().push(smarttrack);
 
 
-///////////////////////////////////////////
+///////////////////// by Pauline Thiele begin //////////////////////
 // include air quality 
-const dataFile = './created_geodata copy.geojson';
+const dataFile = './hour_created_geodata copy.geojson';
 
 const vectorSource_air = new ol.source.Vector({
   format: new ol.format.GeoJSON(),
@@ -61,7 +61,8 @@ const vectorSource_air = new ol.source.Vector({
   url: dataFile,
 });
 
-var colorList = {excellent:'#42CAFF', good: '#9CFD8C', moderate: '#F0E641', weak: '#FF5050', poor: '#960032', unknown:'grey',};
+//var colorList = {excellent:'#42CAFF', good: '#9CFD8C', moderate: '#F0E641', weak: '#FF5050', poor: '#960032', unknown:'grey',};
+var colorList = {excellent:'#4d9221', good: '#a1d76a', moderate: '#f7f7f7', weak: '#e9a3c9', poor: '#c51b7d', unknown:'grey',};
 create_AQ_Legend(colorList); // in aq_legend.js
 
 function getColorByAirQuality(airQuality) {
@@ -83,8 +84,8 @@ function getColorByAirQuality(airQuality) {
 const pointStyle = function(feature) { 
   return new ol.style.Style({
     image: new ol.style.Circle({
-      radius: 6,
-      fill: new ol.style.Fill({ color: getColorByAirQuality(feature.get('Luftqualitätindex'))}),
+      radius: 10,
+      fill: new ol.style.Fill({ color: getColorByAirQuality(feature.get('Luftqualitätsindex'))}),
       stroke: new ol.style.Stroke({ color: 'black', width: 1 }),
     }),
   });
@@ -153,7 +154,8 @@ const smarttrack_air = new ol.layer.Vector({
   visible: true,
 });
 
-let newestFeatures = loadNewestFeature();
+let newestFeatures = loadNewestFeature(); // -------------------------------------------------------------------------------------------> was von beiden ist hier jetzt besser? 
+//let feature = loadNewestFeature();
 
 // Function to toggle legend visibility
 function toggleVisibility() {
@@ -180,16 +182,32 @@ overlayGroup.getLayers().push(smarttrack_air);
 
 // change size of points on map 
 const pointStyleLarge = function(feature) { 
-  const airQuality = feature.get('Luftqualitätindex');
+  const airQuality = feature.get('Luftqualitätsindex');
   const color = getColorByAirQuality(airQuality);
+  //console.log("Color transparency: ", (color + '80')); 
 
-  return new ol.style.Style({
-    image: new ol.style.Circle({
-      radius: 10,
-      fill: new ol.style.Fill({ color: color }),
-      stroke: new ol.style.Stroke({ color: 'black', width: 1 }),
+  return [
+    new ol.style.Style({
+      geometry: function (feature) {
+        return feature.getGeometry();
+      },
+      image: new ol.style.Circle({
+        radius: 30,
+        fill: new ol.style.Fill({ color: color + '80' }), // Halbtransparenter Kreis
+        stroke: new ol.style.Stroke({ color: color, width: 1 }),
+      }),
     }),
-  });
+    new ol.style.Style({
+      geometry: function (feature) {
+        return feature.getGeometry();
+      },
+      image: new ol.style.Circle({
+        radius: 10,
+        fill: new ol.style.Fill({ color: color }), // Kleinere volle Farbe
+        stroke: new ol.style.Stroke({ color: 'black', width: 1 }),
+      }),
+    })
+  ];
 };
 
 let hoveredFeature = null;
@@ -207,6 +225,7 @@ map.on('pointermove', function(evt) {
 
   map.getTargetElement().style.cursor = hit ? 'pointer' : '';
 
+  // bei der Mausbewegung wird der Kreis wieder kleiner aber der andere nicht groß --> check das mal Pauline 
   map.forEachFeatureAtPixel(pixel, function(feature, layer) {
     if (layer === smarttrack_air) {
       if (hoveredFeature && hoveredFeature !== feature && hoveredFeature !== selectedFeature) {
@@ -227,15 +246,11 @@ map.on('pointermove', function(evt) {
 });
 
 
-// eventlistener for searchbar 
-initSearch(); //--> in file "aq_searchbar.js"
+// Search function is in file "aq_searchbar.js". 
+initSearch(); 
 
-// close dropdown if clicked somewhere else 
-document.addEventListener('click', (event) => {
-  if (!document.getElementById('searchbar').contains(event.target)) {
-    searchResults.innerHTML = '';
-  }
-});
+
+/* by Pauline Thiele end */
 
 ///////////////////////////////////////////
 // Popup handler
@@ -244,9 +259,16 @@ function initPopUp()
   var container = document.getElementById('popup');
   var containerAQ = document.getElementById('popup-AQ');
   var content = document.getElementById('popup-content');
-  var contentAQ = document.getElementById('popup-content-AQ');
-  var closer = document.getElementById('popup-closer');
-  var closerAQ = document.getElementById('popup-closer-AQ');
+
+  /* by Pauline Thiele begin */
+  var contentAQ = document.getElementById('popup-content-AQ'),
+    closer = document.getElementById('popup-closer'),
+    closerAQ = document.getElementById('popup-closer-AQ'); 
+
+  const popUpSection = document.getElementById('popUpSection'),
+    dailogHM3301 = document.getElementById('dailogHM3301'),
+    dailoglastRow = document.getElementById('dialogLastRow');
+  /* by Pauline Thiele end */
 
   /**
     * Create an overlay to anchor the popup to the map.
@@ -264,6 +286,7 @@ function initPopUp()
   
   /**
     * Create an overlay for AQ to anchor the popup to the map.
+    * by Pauline Thiele
     */
   var overlayAQ = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
     element: containerAQ,
@@ -283,14 +306,13 @@ function initPopUp()
   closer.onclick = function() {
     overlay.setPosition(undefined);
     closer.blur();
-    selectedFeature.setStyle(pointStyle(selectedFeature));
-    selectedFeature = null;
     return false;
   };
 
   /**
     * Add a click handler to hide the popup.
     * @return {boolean} Don't follow the href.
+    * by Pauline Thiele 
     */
   closerAQ.onclick = function() {
     overlayAQ.setPosition(undefined);
@@ -302,6 +324,7 @@ function initPopUp()
   
   /**
     * Add a click handler to the map to render the popup.
+    * hier nochmal durchgehen und checken was von mir ist und was nicht!!!!!!!!!!!!!!!!!!!!!!!!!
     */
   map.on('singleclick', function(evt) {
     var coordinate = evt.coordinate;
@@ -320,10 +343,12 @@ function initPopUp()
         console.log('No feature found at the clicked position.');
       }
  
+    /* macht gerade nichts!!! 
     var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
-        coordinate, 'EPSG:3857', 'EPSG:4326'));
+        coordinate, 'EPSG:3857', 'EPSG:4326'));*/
 
-    /*if (feature && feature.get('description') !== undefined) {
+    /* warum habe ich das rausgenommen???? 
+    if (feature && feature.get('description') !== undefined) {
       content.innerHTML = feature.get('description');
       overlay.setPosition(coordinate);
       return;
@@ -340,48 +365,43 @@ function initPopUp()
           selectedFeature = feature;
         }
         else if ((selectedFeature && selectedFeature === feature) || (selectedFeature !== feature && sidebarwidth <= 10)) { // klick auf einen Punkt wenn nichts oder popup von anderem Punkt offen ist 
-          content.innerHTML = ''; 
-          contentAQ.innerHTML = ''; 
+          /*content.innerHTML = ''; 
+          contentAQ.innerHTML = ''; */
           // Popup logic for air.geojson
-          var airQualityContent = `
-            <strong>Air Quality Details</strong><br>
-            <p id="indentlastupdate">Last Update at: <br> ${feature.get('time') || 'Unknown'}</p>
-            <div class="popupContent"> 
-            <p>Station: ${feature.get('Name') || 'Unknown'}</p>
-            <p>Air Quality Index: ${feature.get('Luftqualitätindex') || 'Unknown'}</p> 
-            <strong>measurement values:</strong><br> 
-            <table class="aq_value_table">
-              <tr>
-                <th colspan="2">PM<sub>2,5</sub> [µg/m<sup>3</sup>]</th>
-                <th colspan="2">PM<sub>10</sub> [µg/m<sup>3</sup>]</th>
-                <th>NO<sub>2</sub> [µg/m<sup>3</sup>]</th>
-                <th>CO [mg/m<sup>3</sup>]</th>
-              </tr>
-              <tr>
-                <th>SDS011</th>
-                <th class="tb_child_even">HM3301</th>
-                <th class="tb_child_uneven">SDS011</th>
-                <th>HM3301</th>
-                <td rowspan="2">${feature.get('NO2') || 'Unknown'}</td>
-                <td rowspan="2">${feature.get('CO') || 'Unknown'}</td>
-              </tr>
-              <tr>
-                <td>${feature.get('SD:PM2_5') || 'Unknown'}</td>
-                <td class="tb_child_even">${feature.get('GM:PM2_5_Atm') || 'Unknown'}</td>
-                <td class="tb_child_uneven">${feature.get('SD:PM10') || 'Unknown'}</td>
-                <td>${feature.get('GM:PM10_Atm') || 'Unknown'}</td>
-              </tr> 
-            </table>
-            </div>
-            <button class="buttons" id="infobtn" onclick="openSidebarHelper()">More Information</button>
-          `; 
+          let insertedContent = document.querySelectorAll(".insertedContent");
+
+          if(insertedContent) {
+            for (var i = 0; i < insertedContent.length; i++)  insertedContent[i].remove();
+          }
+
+          console.log(feature.getProperties());
+          
+          let html = `  <p class="dialogTimestamp insertedContent">Last Update at: <br> ${feature.get('time') || 'Unknown'}</p>
+                        <p id="station" class ='dialogContent insertedContent'>Station: ${feature.get('Name') || 'Unknown'}</p>
+                        <p id="AQI" class ='dialogContent insertedContent'>Air Quality Index: </p>
+                        <p id="dailogMv" class="dialogContent insertedContent">Measurement Values:</p>`;
+          popUpSection.insertAdjacentHTML('afterbegin', html);
+
+          html = `  <td rowspan="2" class ='insertedContent'>${feature.get('NO2') || 'Unknown'}</td>
+                    <td rowspan="2" class ='insertedContent'>${feature.get('CO') || 'Unknown'}</td>`;
+          dailogHM3301.insertAdjacentHTML('afterend', html);
+
+          //TODO: Klassennamen nicht mit Unterstrichen!! 
+          html = `  <td class ='insertedContent'>${feature.get('SD:PM2_5') || 'Unknown'}</td>
+                    <td class="tb_child_even insertedContent">${feature.get('GM:PM2_5_Atm') || 'Unknown'}</td> 
+                    <td class="tb_child_uneven insertedContent">${feature.get('SD:PM10') || 'Unknown'}</td>
+                    <td class ='insertedContent'>${feature.get('GM:PM10_Atm') || 'Unknown'}</td>`;
+          dailoglastRow.insertAdjacentHTML('afterbegin', html);
+
+          var AqIndex = document.getElementById("AQI");
+          AqIndex.insertBefore(createColoredAqDiv(feature.getProperties()['Luftqualitätsindex']), AqIndex.children[0]); 
 
           window.openSidebarHelper = function() {
             openSidebar(feature);
             //closer.onclick();
             overlayAQ.setPosition(undefined);
             closerAQ.blur();
-            feature.setStyle(pointStyleLarge(feature));
+            //feature.setStyle(pointStyleLarge(feature));
           };
 
           console.log("feature: ", feature); 
@@ -394,7 +414,7 @@ function initPopUp()
           selectedFeature.setStyle(pointStyleLarge(selectedFeature));
           
 
-          contentAQ.innerHTML = airQualityContent;
+          //contentAQ.innerHTML = airQualityContent;
           overlayAQ.setPosition(coordinate);
           return;
         }

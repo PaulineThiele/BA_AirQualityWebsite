@@ -1,67 +1,76 @@
-///////////////////////////////////////////
-// sidebar functions
-let myChart;
+/**
+ * ------ Air Quality Sidebar ------
+ * 
+ * Placed at the right side of the screen. 
+ * 
+ * Shows the measured air values for a specific station, including historical data in a diagram 
+ * and download options. 
+ * 
+ * Author: Pauline Thiele 
+ */
 
+
+let myChart;
+var dates = []; 
+var pm25DataSD = []; 
+var pm10DataSD = []; 
+var pm25DataHM = []; 
+var pm10DataHM = [];
+var no2Data = []; 
+var coData = []; 
+let timeFilteredStations = [];
+
+
+/**
+ * Creates the content of the sidebar. 
+ * @param {object} feature 
+ */
 function ContentSidebar(feature) {
+ 
   var properties = feature.getProperties();
+  let insertedContent = document.querySelectorAll(".insertedSidebarContent");
+
+  // removes old content
+  if(insertedContent.length > 0) {
+    for (var i = 0; i < insertedContent.length; i++)  insertedContent[i].remove();
+  }
+
+  const headerSidebar = document.getElementById('headerSidebar'),
+        locationSidebar = document.getElementById('locationSidebar'),
+        aqvSidebar = document.getElementById('aqvSidebar'),
+        airDataSidebar = document.getElementById('airDataSidebar'),
+        chartSidebar = document.getElementById('chart');
   
-  var content = `
-    <a href="javascript:void(0)" class="closebtn" id="sidebar_closer" onclick="closeSidebarHelper()">&times;</a>
-    <h2 class="indent_h" id="headerStation">Station ${properties['Name'] || 'Unknown'}</h2>
-    <p id="indentlastupdate_sidebar">Last Update at: ${properties['time'] || 'Unknown'}</p>
-    <h4 class="indent_h">Location: </h4>
-    <div class="indent">
-      <p>UTM-Nord [m]: ${properties['UTM-Nord [m]'] || 'Unknown'}</p>
-      <p>UTM-East [m]: ${properties['UTM-Ost [m]'] || 'Unknown'}</p>
-      <p>NHN Height [m]: ${properties['NHN Höhe [m]'] || 'Unknown'}</p>
-    </div>
-    <hr class="hr_sb">
-    <h4 class="indent_h">Air quality values:</h4>
-    <div class="indent">
-      <p id="airQualityIndex">Air Quality Index: ${properties['Luftqualitätindex'] || 'Unknown'}</p>
-      <p>PM<sub>2,5</sub> [µg/m<sup>3</sup>]: </p>
-      <p class="indent" id=PM2_5_SD>Sensor SDS011: ${properties['SD:PM2_5'] || 'Unknown'}</p>
-      <p class="indent" id=PM2_5_HM>Sensor HM3301: ${properties['SD:PM10'] || 'Unknown'}</p>
-      <p>PM<sub>10</sub> [µg/m<sup>3</sup>]: </p>
-      <p class="indent" id=PM10_SD>Sensor SDS011: ${properties['GM:PM2_5_Atm'] || 'Unknown'}</p>
-      <p class="indent" id=PM10_HM>Sensor HM3301: ${properties['GM:PM10_Atm'] || 'Unknown'}</p>
-      <p id=NO2>NO<sub>2</sub> [µg/m<sup>3</sup>]: </p>
-      <p class="indent" id=NO2_MG>Sensor Grove - Mehrkanal-Gassensor V2: ${properties['NO2'] || 'Unknown'}</p>
-      <p id=CO>CO [mg/m<sup>3</sup>]: </p>
-      <p class="indent" id=CO_MG>Sensor Grove - Mehrkanal-Gassensor V2: ${properties['CO'] || 'Unknown'}</p>
-    </div>
-    <hr class="hr_sb">
-    <h4 class="indent_h">Air Data:</h4>
-    <div class="indent">
-      <p>Temperature [°C]: ${properties['Temperatur [°C]'] || 'Unknown'}</p>
-      <p>Humidity [%]: ${properties['Luftfeuchte [%]'] || 'Unknown'}</p>
-      <p>Pressure [hPa]: ${properties['Luftdruck [hPa]'] || 'Unknown'}</p>
-    </div>
-    <hr class="hr_sb">
-    <h4 class="indent_h">Historical Air Quality Data: </h4>
-    <div class="chart">
-      <canvas id="myChart"></canvas> <br>
-      <label id="l_startdate">Start date: </label>
-      <input onchange="filterDataHelper()" type="datetime-local" id="startdate" value="">
-      <label id="l_enddate">End date: </label>
-      <input onchange="filterDataHelper()" type="datetime-local" id="enddate" value=""> 
-    </div>
-    <hr class="hr_sb">
-    <div id="chartlegend">
-      <input id="selectallcheckbox" type="checkbox" onclick="updateAllHelper(this)" checked="">Select all <br>
-      <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="0"> PM<sub>2,5</sub> Sensor: SDS011 <br>
-      <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="1"> PM<sub>10</sub> Sensor: SDS011 <br>
-      <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="2"> PM<sub>2,5</sub> Sensor: HM3301 <br>
-      <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="3"> PM<sub>10</sub> Sensor: HM3301 <br>
-      <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="4"> NO<sub>2</sub> Sensor: G-Mehkanal-Gassensor V2 <br> 
-      <input class="datacheckbox" type="checkbox" onclick="updateChartHelper(this)" checked="" value="5"> CO Sensor: G-Mehkanal-Gassensor V2 
-    </div> 
-    <hr class="hr_sb"> 
-    <div id="download">
-      <button class="buttons" id="PNGDownload" onclick="downloadAsPNGHelper()">Download diagram as png</button>
-      <button class="buttons" id="JSONDownload" onclick="downloadAsJSONHelper()">Download diagram data as json</button> <br><br> 
-    </div>
-  `;
+  let html = `  <h1 class="indent_h insertedSidebarContent" id="headerStation">Station ${properties['Name'] || 'Unknown'}</h1>
+                <p id="indentlastupdate_sidebar" class="insertedSidebarContent">Last Update at: ${properties['time'] || 'Unknown'}</p>`;
+  headerSidebar.insertAdjacentHTML("beforeend", html);
+
+  html = `  <p class="insertedSidebarContent">UTM-Nord [m]: ${properties['UTM-Nord [m]'] || 'Unknown'}</p>
+            <p class="insertedSidebarContent">UTM-East [m]: ${properties['UTM-Ost [m]'] || 'Unknown'}</p>
+            <p class="insertedSidebarContent">NHN Height [m]: ${properties['NHN Höhe [m]'] || 'Unknown'}</p>`;
+  locationSidebar.insertAdjacentHTML("beforeend", html);
+
+  html = `  <p id="airQualityIndex" class="insertedSidebarContent">Air Quality Index: </p>
+            <p class="insertedSidebarContent">PM<sub>2,5</sub> [µg/m<sup>3</sup>]: </p>
+            <p class="indent insertedSidebarContent" id=PM2_5_SD>Sensor SDS011: ${properties['SD:PM2_5'] || 'Unknown'}</p>
+            <p class="indent insertedSidebarContent" id=PM2_5_HM>Sensor HM3301: ${properties['SD:PM10'] || 'Unknown'}</p>
+            <p class="insertedSidebarContent">PM<sub>10</sub> [µg/m<sup>3</sup>]: </p>
+            <p class="indent insertedSidebarContent" id=PM10_SD>Sensor SDS011: ${properties['GM:PM2_5_Atm'] || 'Unknown'}</p>
+            <p class="indent insertedSidebarContent" id=PM10_HM>Sensor HM3301: ${properties['GM:PM10_Atm'] || 'Unknown'}</p>
+            <p id=NO2 class="insertedSidebarContent">NO<sub>2</sub> [µg/m<sup>3</sup>]: </p>
+            <p class="indent insertedSidebarContent" id=NO2_MG>Sensor Grove - Mehrkanal-Gassensor V2: ${properties['NO2'] || 'Unknown'}</p>
+            <p id=CO class="insertedSidebarContent">CO [mg/m<sup>3</sup>]: </p>
+            <p class="indent insertedSidebarContent" id=CO_MG>Sensor Grove - Mehrkanal-Gassensor V2: ${properties['CO'] || 'Unknown'}</p>`;
+  aqvSidebar.insertAdjacentHTML("beforeend", html);
+
+  html = `  <p class="insertedSidebarContent">Temperature [°C]: ${properties['Temperatur [°C]'] || 'Unknown'}</p>
+            <p class="insertedSidebarContent">Humidity [%]: ${properties['Luftfeuchte [%]'] || 'Unknown'}</p>
+            <p class="insertedSidebarContent">Pressure [hPa]: ${properties['Luftdruck [hPa]'] || 'Unknown'}</p>`;
+  airDataSidebar.insertAdjacentHTML("beforeend", html);
+
+  html = '<canvas id="myChart" class="insertedSidebarContent"></canvas>';
+  chartSidebar.insertAdjacentHTML("afterbegin", html); 
+
 
   window.closeSidebarHelper = function() {
       closeSidebar(feature);
@@ -86,56 +95,64 @@ function ContentSidebar(feature) {
   window.downloadAsJSONHelper = function() {
     downloadAsJSON(); 
   }
-
-  return content;
 }
 
-function calculateWidth() {
-  var mapWidth = map.getSize()[0];
-  var sidebarWidth = mapWidth * 0.5;
-  var resolution = map.getView().getResolution();
-  var sidebarWidthInMapUnits = sidebarWidth * resolution;
-  return sidebarWidthInMapUnits;
-}
 
+/**
+ * Transform coordinates into EPSG:3857 format (pseudo-mercator) that is used by OSM 
+ * @param {object} coordinate 
+ * @returns {object} 
+ */
 function transformCoordinates(coordinate) {
-    if (Math.abs(coordinate[0]) <= 180 && Math.abs(coordinate[1]) <= 90) {
-      coordinate = ol.proj.transform(coordinate, 'EPSG:4326', 'EPSG:3857');
-      console.log("Koordinaten transformiert nach EPSG:3857:", coordinate);
-    } else {
-      console.log("Koordinaten bereits in EPSG:3857:", coordinate);
-    }
-    return coordinate; 
+
+  if (Math.abs(coordinate[0]) <= 180 && Math.abs(coordinate[1]) <= 90) {
+    coordinate = ol.proj.transform(coordinate, 'EPSG:4326', 'EPSG:3857');
+    console.log("coordinates transformed to EPSG:3857:", coordinate);
+  } else {
+    console.log("coordinates already in EPSG:3857:", coordinate);
+  }
+  return coordinate; 
 }
 
-// zoom function
+
+/**
+ * Centers the station point on the left half aof the screen. 
+ * @param {object} view 
+ * @param {object} coordinate 
+ */
+function centerPointOnTheLeft (view, coordinate) {
+
+  // Calculate the current map extent and its width to determine the visible area.
+  var extent = view.calculateExtent(map.getSize());
+  var mapWidth = extent[2] - extent[0];
+
+  // Move map by 1/4 of calculated map width. 
+  var offsetX = mapWidth / 4; 
+  var centerWithOffset = [coordinate[0] + offsetX, coordinate[1]];
+
+  view.animate({
+    center: centerWithOffset,
+    duration: 800, 
+    easing: ol.easing.easeOut
+  });
+}
+
+
+/**
+ * Move and zoom in on the map to display the station point on the left half of the screen. 
+ * @param {object} feature 
+ */
 function zoomToFeatureOnLeftSide(feature) {
+
+  // Transform coordinates into correct format. 
   var coordinate = feature.getGeometry().getCoordinates();
   coordinate = transformCoordinates(coordinate); 
 
   var view = map.getView();
   var targetZoomLevel = 16;
   let currentZoom = view.getZoom();
-  console.log("currentZoom: ", currentZoom); 
 
-  function centerPointOnTheLeft () {
-    var extent = view.calculateExtent(map.getSize());
-    var mapWidth = extent[2] - extent[0];
-
-    var offsetX = mapWidth / 4; // move by 1/4 of map width
-    var centerWithOffset = [coordinate[0] + offsetX, coordinate[1]];
-
-    console.log("OffsetX:", offsetX);
-    console.log("new center (with offset):", centerWithOffset);
-
-    view.animate({
-      center: centerWithOffset,
-      duration: 800, 
-      easing: ol.easing.easeOut
-    });
-  }
-
-  // first: zoom and center point
+  // Zoom into and center the station point on the left side of the screen. 
   if(currentZoom < targetZoomLevel) {
     view.animate({
       center: coordinate,
@@ -143,115 +160,275 @@ function zoomToFeatureOnLeftSide(feature) {
       duration: 800,
       easing: ol.easing.easeOut
     },
-    // second: move map, so that the point is centered in the left half
     function() {
-      centerPointOnTheLeft();
+      centerPointOnTheLeft(view, coordinate);
     });
   } else {
-    centerPointOnTheLeft();
+    centerPointOnTheLeft(view, coordinate);
+  } 
+}
+
+
+/**
+ * Creates an AQ div with the associated index color and the index key word. 
+ * @param {number} level 
+ * @returns {object}
+ */
+function createColoredAqDiv(level) {
+  var aqDiv = document.createElement("DIV");
+  aqDiv.className = "aq_div insertedSidebarAQContent";
+
+  let text = getAQKeyByLevel(level),
+      html = `<p id="textcolor" >${text}</p>`; 
+  aqDiv.insertAdjacentHTML("beforeend", html);
+  
+  if(level === 5 || level === undefined) {
+    aqDiv.style.color = "white";
   }
+
+  aqDiv.style.backgroundColor = getColorByAirQuality(level);
+  return aqDiv;
+}
+
+/**
+ * Creates chart with Chart.js. 
+ * @param {object} latestFeatures 
+ */
+function createChart(latestFeatures){
+
+  dates = latestFeatures.map(feature => feature.properties.time); // time stamp for x-axis 
+  pm25DataSD = latestFeatures.map(feature => feature.properties["SD:PM2_5"]);
+  pm10DataSD = latestFeatures.map(feature => feature.properties["SD:PM10"]);
+  pm25DataHM = latestFeatures.map(feature => feature.properties["GM:PM2_5_Atm"]); 
+  pm10DataHM = latestFeatures.map(feature => feature.properties["GM:PM10_Atm"]);
+  no2Data = latestFeatures.map(feature => feature.properties["NO2"]);
+  coData = latestFeatures.map(feature => feature.properties["CO"] * 1000); // calculation from mg/m3 to μg/m³ 
+
+  var ctx = document.getElementById("myChart"); 
+
+  myChart = new Chart(ctx, {
+    type: 'line', 
+    data: {
+      labels: dates.reverse(), 
+      datasets: [
+        {
+          label: 'PM2.5 SDS011',
+          data: pm25DataSD.reverse(),
+          borderColor: 'rgb(156, 137, 178)',
+          backgroundColor: 'rgba(156, 137, 178, 0.4)',
+          tension: 0.1,
+          pointRadius: 0,
+        },
+        {
+          label: 'PM10 SDS011',
+          data: pm10DataSD.reverse(),
+          borderColor: 'rgb(110, 41, 124)',
+          backgroundColor: 'rgba(110, 41, 124, 0.4)',
+          tension: 0.1,
+          pointRadius: 0,
+        },
+        {
+          label: 'PM2.5 HM3301',
+          data: pm25DataHM.reverse(),
+          borderColor: 'rgb(245, 175, 2)',
+          backgroundColor: 'rgba(245, 175, 2, 0.4)',
+          tension: 0.1,
+          pointRadius: 0,
+        },
+        {
+          label: 'PM10 HM3301',
+          data: pm10DataHM.reverse(),
+          borderColor: 'rgb(243, 130, 50)',
+          backgroundColor: 'rgba(243, 130, 50, 0.4)',
+          tension: 0.1,
+          pointRadius: 0,
+        }, 
+        {
+          label: 'NO2 G-Mehrkanal-Gassensor V2',
+          data: no2Data.reverse(),
+          borderColor: 'rgb(57, 119, 253)',
+          backgroundColor: 'rgba(57, 119, 253, 0.4)',
+          tension: 0.1,
+          pointRadius: 0,
+        },
+        {
+          label: 'CO G-Mehrkanal-Gassensor V2',
+          data: coData.reverse(),
+          borderColor: 'rgb(57, 240, 253)',
+          backgroundColor: 'rgba(57, 240, 253, 0.4)',
+          tension: 0.1,
+          pointRadius: 0,
+        },
+      ]
+    },
+    options: {
+      scales: {
+        x: {
+          display: true,
+          title: {
+              display: true,
+              text: 'Time'
+          }
+        },
+        y: {
+          display: true,
+          title: {
+              display: true,
+              text: 'Concentration (μg/m³)'
+          }
+        }
+      }, 
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      maintainAspectRatio: false
+    }
+  }); 
+
+  // adding sqaures with color of graph to the legend
+  if (window.myChart) {
+    const datasets = myChart.data.datasets;
+    const checkboxes = document.querySelectorAll('.datacheckbox');
+
+    checkboxes.forEach((checkbox, index) => {
+      const colorBox = document.createElement('span');
+      //colorBox.classList.add('color-box');
+      colorBox.className = "color-box insertedSidebarContent"; 
+
+      // read colors from myChart dtasets
+      colorBox.style.backgroundColor = datasets[index]?.backgroundColor || '#000';
+      colorBox.style.borderColor = datasets[index]?.borderColor || '#000'; 
+
+      // add colorful span behind checkbox
+      checkbox.parentNode.insertBefore(colorBox, checkbox.nextSibling);
+    });
+  }
+
+  // ckeck all checkboxes by default when opening the sidebar 
+  setTimeout(() => {
+    if (!myChart) return; 
+
+    const checkboxes = document.querySelectorAll('.datacheckbox');
+    document.getElementById("selectallcheckbox").checked = true; 
+    checkboxes.forEach((checkbox, index) => {
+        if (myChart.data.datasets[index]) {
+            checkbox.checked = true;
+            myChart.show(index);
+        }
+    });
+  }, 100); // minimal delay
 }
 
 
-function createCircle(color) {
-  var circle = document.createElement("DIV");
-  circle.className = "circle_aqindex_sidebar";
-  circle.style.backgroundColor = getColorByAirQuality(color);
-  return circle;
-}
 
-var dates = []; 
-var pm25DataSD = []; 
-var pm10DataSD = []; 
-var pm25DataHM = []; 
-var pm10DataHM = [];
-var no2Data = []; 
-var coData = []; 
-let allFeatures = [];
-
+/**
+ * Opens Sidebar for associated station and shows the content. 
+ * @param {object} feature 
+ */
 function openSidebar(feature) {
-  console.log("sidebarFeature: ", feature); 
-  console.log("sidebarPointStyle1: ", feature.getStyle()); 
+
   feature.setStyle(pointStyleLarge(feature));
-  console.log("sidebarPointStyle2: ", feature.getStyle()); 
-  // zoom and position point on the left half 
+  //map.render(); 
+
+  // Zoom into map and center the station point on the left half of the screen.  
   zoomToFeatureOnLeftSide(feature); 
 
-  // making the close button visible 
+  // Makes the close button visible. 
   document.getElementById("sidebar").classList.add("open");
 
-  // move searchbar to the left 
+  // Move the searchbar to the left. 
   document.getElementById("searchbar").classList.add("left"); 
   
-  //sidebar.style.display = "block";    
-  var content = ContentSidebar(feature);
+  // Creates visible content. 
+  ContentSidebar(feature); 
+
   document.getElementById("sidebar").style.width = "50%";
   document.getElementById("map").style.marginRight = "50%";
-  document.getElementById("sidebar-content").innerHTML = content;
+  document.getElementById("error_chart").style.visibility = "hidden"; 
+  document.getElementById("error_time").style.visibility = "hidden"; 
+  document.getElementById("error_time_1h").style.visibility = "hidden"; 
+  document.getElementById("error_buttons").style.visibility = "hidden"; 
 
-  // Append the circle to the Air Quality Index paragraph
-  var properties = feature.getProperties();
-  var airQualityIndexElement = document.getElementById("airQualityIndex");
-  var circle = createCircle(properties['Luftqualitätindex']);
-  if(airQualityIndexElement) {
-    airQualityIndexElement.insertBefore(circle, airQualityIndexElement.children[0]);
+
+  var properties = feature.getProperties(), 
+      circleAqIndex = createColoredAqDiv(properties['Luftqualitätsindex']), 
+      parameterIndex = properties['Parameterindex']; 
+
+  var airQualityIndexElement = document.getElementById("airQualityIndex"), 
+      PM2_5_SD_Element = document.getElementById("PM2_5_SD"),
+      PM2_5_HM_Element = document.getElementById("PM2_5_HM"),
+      PM10_SD_Element = document.getElementById("PM10_SD"),
+      PM10_HM_Element = document.getElementById("PM10_HM"),
+      NO2_Element = document.getElementById("NO2_MG"),
+      CO_Element = document.getElementById("CO_MG");
+
+  // If there is an air quality index element, remove all contents with the class "insertedSidebarAQContent" and add new contents. 
+  if(airQualityIndexElement) { 
+    let insertedContent = document.querySelectorAll(".insertedSidebarAQContent");
+    if(insertedContent.length > 0) {
+      for (var i = 0; i < insertedContent.length; i++)  insertedContent[i].remove();
+    }
+
+    airQualityIndexElement.insertBefore(circleAqIndex, airQualityIndexElement.children[0]);
+    PM2_5_SD_Element.insertBefore(createColoredAqDiv(parameterIndex['pm2_5_SD']), PM2_5_SD_Element.children[0]); 
+    PM2_5_HM_Element.insertBefore(createColoredAqDiv(parameterIndex['pm2_5_HM']), PM2_5_HM_Element.children[0]); 
+    PM10_SD_Element.insertBefore(createColoredAqDiv(parameterIndex['pm10_SD']), PM10_SD_Element.children[0]); 
+    PM10_HM_Element.insertBefore(createColoredAqDiv(parameterIndex['pm10_HM']), PM10_HM_Element.children[0]); 
+    NO2_Element.insertBefore(createColoredAqDiv(parameterIndex['no2']), NO2_Element.children[0]); 
+    CO_Element.insertBefore(createColoredAqDiv(parameterIndex['co']), CO_Element.children[0]); 
   }
 
-  // Append a circle for each parameter
-  var parameter_index = properties['Parameterindex']; 
-  var PM2_5_SD_Element = document.getElementById("PM2_5_SD");
-  var PM2_5_HM_Element = document.getElementById("PM2_5_HM");
-  var PM10_SD_Element = document.getElementById("PM10_SD");
-  var PM10_HM_Element = document.getElementById("PM10_HM");
-  var NO2_Element = document.getElementById("NO2_MG");
-  var CO_Element = document.getElementById("CO_MG");
-  PM2_5_SD_Element.insertBefore(createCircle(parameter_index['pm2_5_SD']), PM2_5_SD_Element.children[0]); 
-  PM2_5_HM_Element.insertBefore(createCircle(parameter_index['pm2_5_HM']), PM2_5_HM_Element.children[0]); 
-  PM10_SD_Element.insertBefore(createCircle(parameter_index['pm10_SD']), PM10_SD_Element.children[0]); 
-  PM10_HM_Element.insertBefore(createCircle(parameter_index['pm10_HM']), PM10_HM_Element.children[0]); 
-  NO2_Element.insertBefore(createCircle(parameter_index['no2']), NO2_Element.children[0]); 
-  CO_Element.insertBefore(createCircle(parameter_index['co']), CO_Element.children[0]); 
 
-
-  //get data from geojson 
+  // Fetch data from the geojson file, to 
   fetch(dataFile)
   .then(function(response){
     return response.json(); 
   })
   .then(function(data){    
-    // sort features by time
-    /*console.log("fetch data: ", data); 
-    console.log("Feature: ", feature);
-    console.log("Feature Properties: ", feature.getProperties());
-    console.log("Feature Name: ", feature.getProperties()['Name']);*/
 
-    const filteredStations = data.features.filter(f => 
+    // filter features by station name 
+    const nameFilteredStations = data.features.filter(f => 
       f.properties['Name'] === feature.getProperties()['Name']
    );
-
-    allFeatures = filteredStations.sort(function(a, b) {
+ 
+    // filter features from each station name by date
+    timeFilteredStations = nameFilteredStations.sort(function(a, b) {
     return new Date(b.properties.time) - new Date(a.properties.time);});
 
-    // get min, max values for date filtering 
-    var minDate = new Date(allFeatures[allFeatures.length - 1].properties.time);
-    var maxDate = new Date(allFeatures[0].properties.time);
-    console.log("mD: ", minDate); 
-    console.log("maxD:", maxDate); 
+    // get min and max values for creating time period of the chart 
+    var minDate = new Date(timeFilteredStations[timeFilteredStations.length - 1].properties.time);
+    var maxDate = new Date(timeFilteredStations[0].properties.time);
 
-    document.getElementById('startdate').min = minDate.toISOString().slice(0, 16);
-    document.getElementById('startdate').max = maxDate.toISOString().slice(0, 16);
-    document.getElementById('enddate').min = minDate.toISOString().slice(0, 16);
-    document.getElementById('enddate').max = maxDate.toISOString().slice(0, 16);
+    // calculate timezone offset (1h)
+    var x = (new Date()).getTimezoneOffset() * 60000;
+    
+    // set min and max values for time period input fields
+    document.getElementById('startdate').min = (new Date(minDate-x)).toISOString().slice(0, 16);
+    document.getElementById('startdate').max = (new Date(maxDate-x)).toISOString().slice(0, 16);
+    document.getElementById('enddate').min = (new Date(minDate-x)).toISOString().slice(0, 16);
+    document.getElementById('enddate').max = (new Date(maxDate-x)).toISOString().slice(0, 16);
 
-    // Standard: Letzte 24 Stunden anzeigen
-    var defaultEndDate = maxDate.toISOString().slice(0, 16);
-    var defaultStartDate = new Date(maxDate - 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+  
+    // set min and max values for chart
+    if(maxDate - (24 * 60 * 60 * 1000) >= minDate) {
+      // default: show last 24 h of measurement in the chart
+      var defaultStartDate = (new Date(maxDate - 24 * 60 * 60 * 1000-x)).toISOString().slice(0, 16);
+    }
+    else {
+      // if measurement period is smaller than 24 h, show the whole period 
+      var defaultStartDate = (new Date(minDate-x)).toISOString().slice(0, 16); 
+    }
+    var defaultEndDate = (new Date(maxDate-x)).toISOString().slice(0, 16);
+    //console.log("defaultStartDate: ", defaultStartDate); 
+    //console.log("defaultEndDate: ", defaultEndDate); 
 
     document.getElementById('startdate').value = defaultStartDate;
     document.getElementById('enddate').value = defaultEndDate;
 
-    // Features filtern, die im Standard-Zeitintervall liegen
-    var filteredFeatures = allFeatures.filter(function(feature) {
+    // filters features, that are in default time period
+    var filteredFeatures = timeFilteredStations.filter(function(feature) {
       var featureDate = new Date(feature.properties.time);
       return featureDate >= new Date(defaultStartDate) && featureDate <= new Date(defaultEndDate);
     });
@@ -260,130 +437,21 @@ function openSidebar(feature) {
     createChart(filteredFeatures);
   })
 
-  // add chart 
-  const ctx = document.getElementById("myChart"); 
-
-
-  function createChart(latestFeatures){
-
-    dates = latestFeatures.map(feature => feature.properties.time); // Zeitstempel als X-Achse // const
-    pm25DataSD = latestFeatures.map(feature => feature.properties["SD:PM2_5"]);
-    pm10DataSD = latestFeatures.map(feature => feature.properties["SD:PM10"]);
-    pm25DataHM = latestFeatures.map(feature => feature.properties["GM:PM2_5_Atm"]); 
-    pm10DataHM = latestFeatures.map(feature => feature.properties["GM:PM10_Atm"]);
-    no2Data = latestFeatures.map(feature => feature.properties["NO2"]);
-    coData = latestFeatures.map(feature => feature.properties["CO"] * 1000); // Umrechnung von mg/m3 in μg/m³
-
-    myChart = new Chart(ctx, {
-      type: 'line', 
-      data: {
-        labels: dates.reverse(), 
-        datasets: [
-          {
-            label: 'PM2.5 SDS011',
-            data: pm25DataSD.reverse(),
-            borderColor: 'rgb(87, 226, 94)',
-            backgroundColor: 'rgba(87, 226, 94, 0.4)',
-            tension: 0.1,
-            pointRadius: 0,
-          },
-          {
-            label: 'PM10 SDS011',
-            data: pm10DataSD.reverse(),
-            borderColor: 'rgb(6, 112, 11)',
-            backgroundColor: 'rgba(6, 112, 11, 0.4)',
-            tension: 0.1,
-            pointRadius: 0,
-          },
-          {
-            label: 'PM2.5 HM3301',
-            data: pm25DataHM.reverse(),
-            borderColor: 'rgb(255, 103, 153)',
-            backgroundColor: 'rgba(255, 103, 153, 0.4)',
-            tension: 0.1,
-            pointRadius: 0,
-          },
-          {
-            label: 'PM10 HM3301',
-            data: pm10DataHM.reverse(),
-            borderColor: 'rgb(164, 34, 197)',
-            backgroundColor: 'rgba(164, 34, 197, 0.4)',
-            tension: 0.1,
-            pointRadius: 0,
-          }, 
-          {
-            label: 'NO2 G-Mehrkanal-Gassensor V2',
-            data: no2Data.reverse(),
-            borderColor: 'rgb(57, 119, 253)',
-            backgroundColor: 'rgba(57, 119, 253, 0.4)',
-            tension: 0.1,
-            pointRadius: 0,
-          },
-          {
-            label: 'CO G-Mehrkanal-Gassensor V2',
-            data: coData.reverse(),
-            borderColor: 'rgb(57, 240, 253)',
-            backgroundColor: 'rgba(57, 240, 253, 0.4)',
-            tension: 0.1,
-            pointRadius: 0,
-          },
-        ]
-      },
-      options: {
-        scales: {
-          x: {
-            display: true,
-            title: {
-                display: true,
-                text: 'Zeit'
-            }
-          },
-          y: {
-            display: true,
-            title: {
-                display: true,
-                text: 'Konzentration (μg/m³)'
-            }
-          }
-        }, 
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        maintainAspectRatio: false
-      }
-    }); 
-
-    // adding sqaures with color of graph to the legend
-    if (window.myChart) {
-      const datasets = myChart.data.datasets;
-      const checkboxes = document.querySelectorAll('.datacheckbox');
-  
-      checkboxes.forEach((checkbox, index) => {
-        const colorBox = document.createElement('span');
-        colorBox.classList.add('color-box');
-  
-        // Farben aus myChart-Datasets lesen
-        colorBox.style.backgroundColor = datasets[index]?.backgroundColor || '#000';
-        colorBox.style.borderColor = datasets[index]?.borderColor || '#000'; 
-  
-        // Farbfeld nach der Checkbox einfügen
-        checkbox.parentNode.insertBefore(colorBox, checkbox.nextSibling);
-      });
-    }
-  }
-
-  console.log("sidebarPointStyle3: ", feature.getStyle()); 
-  // Set the large style for the selected feature
+  //console.log("sidebarPointStyle3: ", feature.getStyle()); 
   //feature.setStyle(pointStyleLarge(feature));
   selectedFeature = feature;
-  //selectedFeature.setStyle(pointStyleLarge(selectedFeature)); 
-  smarttrack_air.changed();
+  selectedFeature.setStyle(pointStyleLarge(selectedFeature)); 
+  map.render(); 
+  console.log("der Style: ", selectedFeature.getStyle());
+  //console.log("Feature Layer:", map.getLayers());
 }
 
+
+/**
+ * Updates all checkboxes when checkbox "Select all" has changed 
+ * @param {object} selectall 
+ */
 function updateAll(selectall) {
-  let selectallcheckbox = document.getElementById("selectallcheckbox"); 
   let checkboxes = document.querySelectorAll('.datacheckbox'); 
 
   if(selectall.checked === false) {
@@ -400,12 +468,16 @@ function updateAll(selectall) {
   }
 }; 
 
+
+/**
+ * Updates the checkbox "Select All" after an other checkbox was clicked
+ */
 function checkboxSelectAllChecker() {
   let selectallcheckbox = document.getElementById("selectallcheckbox"); 
   let checkboxes = document.querySelectorAll('.datacheckbox'); 
 
   let x = 0; 
-  for(let i = 0; i <= checkboxes.length -1; i++) {
+  for(let i = 0; i <= checkboxes.length - 1; i++) {
     if(checkboxes[i].checked === true) {
       x++; 
     }
@@ -418,6 +490,11 @@ function checkboxSelectAllChecker() {
   }
 }; 
 
+
+/**
+ * Updates chart after a checkbox was clicked 
+ * @param {string} dataset 
+ */
 function updateChart(dataset) {
   const isDataShown = myChart.isDatasetVisible(dataset);  
 
@@ -429,106 +506,225 @@ function updateChart(dataset) {
   checkboxSelectAllChecker(); 
 }; 
 
+
+/**
+ * Filters the diagram based on the inputs of start and end date from the user. 
+ * Manages the error messages for the input fields. 
+ */
 function filterData() {
-  const startDate = new Date(document.getElementById('startdate').value);
-  const endDate = new Date(document.getElementById('enddate').value);
-  
-  console.log("startDate: ", startDate, "\n", "endDate: ", endDate); 
-  console.log("latestFeatures: ", allFeatures); 
+  // get current start and end date 
+  var startDate = new Date(document.getElementById('startdate').value),
+      endDate = new Date(document.getElementById('enddate').value);
 
-  const filteredFeatures = allFeatures.filter(feature => {
-    const featureDate = new Date(feature.properties.time);
-    return featureDate >= startDate && featureDate <= endDate;
-  });
+  // get error messages 
+  const error_chart = document.getElementById('error_chart'),
+        error_time = document.getElementById('error_time'),
+        error_time_1h = document.getElementById('error_time_1h'),
+        error_buttons = document.getElementById('error_buttons');
 
-  console.log("ff", filteredFeatures); 
-  // extract data for chart
-  const filteredDates = filteredFeatures.map(f => f.properties.time);
-  const filteredPM25SD = filteredFeatures.map(f => f.properties["SD:PM2_5"]);
-  const filteredPM10SD = filteredFeatures.map(f => f.properties["SD:PM10"]);
-  const filteredPM25HM = filteredFeatures.map(f => f.properties["GM:PM2_5_Atm"]);
-  const filteredPM10HM = filteredFeatures.map(f => f.properties["GM:PM10_Atm"]);
-  const filteredNO2 = filteredFeatures.map(f => f.properties["NO2"]);
-  const filteredCO = filteredFeatures.map(f => f.properties["CO"]);
+  // calculate start date + 1 h, because the measurements are hourly       
+  var startDatePlusOneHour = new Date(startDate.getTime() + (60 * 60 * 1000));
 
-  // refresh diagramm
-  myChart.data.labels = filteredDates.reverse();
-  myChart.data.datasets[0].data = filteredPM25SD.reverse();
-  myChart.data.datasets[1].data = filteredPM10SD.reverse();
-  myChart.data.datasets[2].data = filteredPM25HM.reverse();
-  myChart.data.datasets[3].data = filteredPM10HM.reverse();
-  myChart.data.datasets[4].data = filteredNO2.reverse();
-  myChart.data.datasets[5].data = filteredCO.reverse();
+  // error message manager 
+  if(startDate >= endDate) {
+    // shows "The end time must be greater than the start time."
+    error_chart.style.visibility = "visible";
+    error_time.style.visibility = "visible"; 
+    error_time_1h.style.visibility = "hidden"; 
+  } else if (startDatePlusOneHour > endDate) {
+    // shows "Between the start and end time must be 1 hour."
+    error_chart.style.visibility = "visible"; 
+    error_time.style.visibility = "hidden"; 
+    error_time_1h.style.visibility = "visible";
+  } else {
+    // input is correct, shows no error message
+    error_chart.style.visibility = "hidden"; 
+    error_time.style.visibility = "hidden"; 
+    error_time_1h.style.visibility = "hidden";
+    error_buttons.style.visibility = "hidden"; 
 
-  myChart.update(); 
-}
-
-function downloadAsPNG() {
-  const imageLink = document.createElement("A"); 
-  const canvas = document.getElementById("myChart"); 
-  imageLink.download = "diagram.png"; 
-  imageLink.href = canvas.toDataURL('image/png', 1); 
-  //window.open(imageLink); 
-  //document.write('<img src=" '+imageLink+' "/>'); 
-  //console.log(imageLink.href); 
-  imageLink.click(); 
-}
-
-function downloadAsJSON() {  
-  const data = {
-    labels: myChart.data.labels, // time stamp 
-    datasets: myChart.data.datasets
-    .filter((dataset, index) => myChart.isDatasetVisible(index)) // only get visible datasets 
-    .map(dataset => ({
-      label: dataset.label,
-      data: dataset.data
-    }))
-  };
-
-  const jsonFormat = data.labels.map((label, index) => {
-    const entry = { timestamp: label };
-    data.datasets.forEach(dataset => {
-      entry[dataset.label] = dataset.data[index];
+    // get features that are in the specific time stamp
+    const filteredFeatures = timeFilteredStations.filter(feature => {
+      const featureDate = new Date(feature.properties.time);
+      return featureDate >= startDate && featureDate <= endDate;
     });
-    return entry;
-  });
 
-  const jsonString = jsonFormat.map(item => JSON.stringify(item)).join('\n'); // Formatierung für bessere Lesbarkeit
-  const blob = new Blob([jsonString], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
+    // extract data for chart
+    const filteredDates = filteredFeatures.map(f => f.properties.time);
+    const filteredPM25SD = filteredFeatures.map(f => f.properties["SD:PM2_5"]);
+    const filteredPM10SD = filteredFeatures.map(f => f.properties["SD:PM10"]);
+    const filteredPM25HM = filteredFeatures.map(f => f.properties["GM:PM2_5_Atm"]);
+    const filteredPM10HM = filteredFeatures.map(f => f.properties["GM:PM10_Atm"]);
+    const filteredNO2 = filteredFeatures.map(f => f.properties["NO2"]);
+    const filteredCO = filteredFeatures.map(f => f.properties["CO"]);
 
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "air_quality_data.json";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    // refresh diagramm with data shown in correct time order
+    myChart.data.labels = filteredDates.reverse();
+    myChart.data.datasets[0].data = filteredPM25SD.reverse();
+    myChart.data.datasets[1].data = filteredPM10SD.reverse();
+    myChart.data.datasets[2].data = filteredPM25HM.reverse();
+    myChart.data.datasets[3].data = filteredPM10HM.reverse();
+    myChart.data.datasets[4].data = filteredNO2.reverse();
+    myChart.data.datasets[5].data = filteredCO.reverse();
+
+    myChart.update(); 
+  }
+}
+
+
+/**
+ * Downloads the visible diagram as PNG file. 
+ */
+function downloadAsPNG() {
+  const errorChart = document.getElementById('error_chart'); 
+  const errorButtons = document.getElementById('error_buttons'); 
+
+  if(errorChart.style.visibility == "visible") {
+    // shows "Download not possible. Please handle the other error befor starting the download."
+    errorButtons.style.visibility = "visible"; 
+  } else {
+    // download is possible 
+    errorButtons.style.visibility = "hidden"; 
+
+    const canvas = document.getElementById("myChart");
+
+    // draw diagramm
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = canvas.width + 40;
+    tempCanvas.height = canvas.height + 180;
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCtx.fillStyle = "white"; // white background
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    tempCtx.drawImage(canvas, 20, 20);
+
+    // get only visible graphs for legend
+    const checkboxes = document.querySelectorAll(".datacheckbox");
+    const datasets = myChart.data.datasets;
+    const activeDatasets = [];
+
+    checkboxes.forEach((checkbox, index) => {
+      if (checkbox.checked) {
+        activeDatasets.push({ label: datasets[index].label, color: datasets[index].borderColor });
+      }
+    });
+
+    // set legend position and style 
+    const legendX = 30;
+    const legendY = canvas.height + 20;
+    const boxSize = 12;
+    tempCtx.font = "14px Arial";
+    tempCtx.fillStyle = "black";
+
+    // draw legend 
+    activeDatasets.forEach((dataset, index) => {
+      const textY = legendY + index * 25;
+
+      // draw colorbox
+      tempCtx.fillStyle = dataset.color;
+      tempCtx.fillRect(legendX, textY, boxSize, boxSize);
+
+      // draw label
+      tempCtx.fillStyle = "black";
+      tempCtx.fillText(dataset.label, legendX + 20, textY + 10);
+    });
+    
+    // create PNG file 
+    const imageLink = document.createElement("A"); 
+    imageLink.download = "diagram.png"; 
+    imageLink.href = tempCanvas.toDataURL('image/png', 1); 
+    imageLink.click(); 
+  }
+}
+
+
+/**
+ * Downloads visible diagram data as json file. 
+ */
+function downloadAsJSON() {  
+  const error_chart = document.getElementById('error_chart'); 
+  const error_buttons = document.getElementById('error_buttons'); 
+
+  if(error_chart.style.visibility == "visible") {
+    // shows "Download not possible. Please handle the other error befor starting the download."
+    error_buttons.style.visibility = "visible"; 
+  } else {
+    // download is possible
+    error_buttons.style.visibility = "hidden"; 
+
+    // get diagram data 
+    const data = {
+      labels: myChart.data.labels, // time stamp 
+      datasets: myChart.data.datasets
+      .filter((dataset, index) => myChart.isDatasetVisible(index)) // only get visible datasets 
+      .map(dataset => ({
+        label: dataset.label,
+        data: dataset.data
+      }))
+    };
+
+    // puts diagram data into json format 
+    const jsonFormat = data.labels.map((label, index) => {
+      const entry = { timestamp: label };
+      data.datasets.forEach(dataset => {
+        entry[dataset.label] = dataset.data[index];
+      });
+      return entry;
+    });
+
+    const jsonString = jsonFormat.map(item => JSON.stringify(item)).join('\n'); // formats data for better readability
+    
+    // creates json file 
+    const blob = new Blob([jsonString], { type: "application/json" }), 
+          url = URL.createObjectURL(blob), 
+          link = document.createElement("a"); 
+    link.href = url;
+    link.download = "air_quality_data.json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }
   
-function closeSidebar(feature) {
+
+/**
+ * Calculate the sidebar width in map units.
+ * @returns {number}
+ */
+function calculateWidth() {
+  var mapWidth = map.getSize()[0];
+  var sidebarWidth = mapWidth * 0.5;
+  var resolution = map.getView().getResolution();
+  var sidebarWidthInMapUnits = sidebarWidth * resolution;
+  return sidebarWidthInMapUnits;
+}
+
+/**
+ * Close sidebar, including position reset of station on the map. 
+ * @param {object} feature 
+ */
+function closeSidebar(feature) {  
   document.getElementById("sidebar").style.width = "0";
-  document.getElementById("map").style.marginRight = "-10%";
+  document.getElementById("map").style.marginRight = "0";
+
   const searchInput = document.getElementById('searchInput');
   searchInput.value = '';
 
-  var coordinate = feature.getGeometry().getCoordinates();
-
   // transform coordinates if needed
+  var coordinate = feature.getGeometry().getCoordinates();
   coordinate = transformCoordinates(coordinate); 
 
-  // reset center 
+  // reset position to screen center 
   var sidebarWidthInMapUnits = calculateWidth();
-  //var coordinate = feature.getGeometry().getCoordinates();
   var newCenter = [coordinate[0] - sidebarWidthInMapUnits/16, coordinate[1]];
   map.getView().animate({ center: newCenter, duration: 500 });
-  //sidebar.style.display = "none";
 
+  // reset point size 
   if (selectedFeature) {
     selectedFeature.setStyle(pointStyle(selectedFeature));
     selectedFeature = null;
   }
 
-  // hiding the close button 
+  // hide close button 
   document.getElementById("sidebar").classList.remove("open");
 
   // move searchbar back to the middle 
