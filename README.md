@@ -1,10 +1,25 @@
 # BA_AirQualityWebsite
 
-## Kontext
-Thema der Bachelorarbeit: "Entwicklung eines Prototyps einer Messgeräteerweiterung zur Erfassung von Luftdaten und Darstellung der gemessenen Daten in einer Webanwendung"
+## Content
+This GitHub Repository includes: 
+- Code for measuring the air quality with a Raspberry Pi, 
+    - SDS011,
+    - HM3301 and
+    - Grove - Mehrkanal-Gassensor V2.
+    (located in the folder "raspi-sensors")
 
-Ich habe den Luftsensortest bereits durchgeführt und stelle die gemessenen Daten jetzt in einer lokal laufenden Webanwendung dar. 
+- Code for cleaning, transforming and analysing the measured values.
+    (located in the folder "data-analysis")
 
-## Starten
-1. In der Konsole zu Ordner mit heruntergeladenen Dateien navigieren und einen lokalen Server starten mit: ```python -m http.server 8000```
-2. Im Browser eingeben: http://localhost:8000
+- Code for visualising the measured values on a local web application.
+    (located in the folder "website")    
+
+## Context
+This Repository was created for my bachelors thesis. 
+The topic is: "Entwicklung eines Prototyps einer Messgeräteerweiterung zur Erfassung von Luftdaten und Darstellung der gemessenen Daten in einer Webanwendung" 
+(engl. "Development of a prototype of a measuring device extension for the acquisition of air data and display of the measured data in a web application")
+
+## Starting the web application
+1. You must have Python on your computer. 
+2. Navigate to the downloaded files in the command prompt and start a local server with: ```python -m http.server 8000```
+3. Open a new window in your browser and type: http://localhost:8000/DEMO.html
