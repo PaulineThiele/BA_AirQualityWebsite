@@ -101,14 +101,14 @@ label {
   margin-bottom: 0;
 }
 
-.aq_value_table {
+.aqValueTable {
   width: 60%;
   border-collapse: collapse;
   margin-left: 15px;
   margin-bottom: 10px;
 }
 
-.aq_value_table th, .aq_value_table td {
+.aqValueTable th, .aqValueTable td {
   font-size: 12px;
   text-align: left;
   padding: 5px;
@@ -118,15 +118,15 @@ label {
   font-family: Arial;
 }
 
-.aq_value_table th:nth-child(even), .aq_value_table td:nth-child(even) {
+.aqValueTable th:nth-child(even), .aqValueTable td:nth-child(even) {
   background-color: #c2d9e6;
 }
 
-.aq_value_table th.tb_child_even, .aq_value_table td.tb_child_even {
+.aqValueTable th.tbChildEven, .aqValueTable td.tbChildEven {
   background-color: #efefef;
 }
 
-.aq_value_table .tb_child_uneven {
+.aqValueTable .tbChildUneven {
   background-color: #c2d9e6;
 }
 
@@ -173,7 +173,7 @@ label {
   margin-left: 15px;
 }
 
-.dialogTimestamp {
+.popupTimestamp {
   position: absolute;
   right: 0;
   top: 15px;
