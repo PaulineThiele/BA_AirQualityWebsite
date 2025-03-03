@@ -71,8 +71,6 @@ const vectorSourceAir = new ol.source.Vector({
 
 //var colorList = {excellent:'#42CAFF', good: '#9CFD8C', moderate: '#F0E641', weak: '#FF5050', poor: '#960032', unknown:'grey',};
 var colorList = {excellent:'#4d9221', good: '#a1d76a', moderate: '#f7f7f7', weak: '#e9a3c9', poor: '#c51b7d', unknown:'grey',};
-create_AQ_Legend(colorList); // in aq_legend.js
-
 
 /**
  * Gets color string by air quality level. 
@@ -199,6 +197,10 @@ async function loadNewestFeature() {
 }
 
 
+newestFeatures = loadNewestFeature(); 
+create_AQ_Legend(colorList); // in aq_legend.js
+
+
 /**
  * Creates "Air Quality" layer with newest feature points. 
  */
@@ -211,16 +213,13 @@ const smarttrackAir = new ol.layer.Vector({
       feature.getId() === newestFeature.id || 
       feature.get('id') === newestFeature.id
     );
+    isNewest ? console.log("Features on map: ", feature) : null; 
 
     // only apply style to newestFeatures 
     return isNewest ? pointStyle(feature) : null;
   },
   visible: true,
 });
-
-
-newestFeatures = loadNewestFeature(); 
-//let feature = loadNewestFeature();
 
 
 /**
@@ -283,10 +282,6 @@ map.on('pointermove', function(evt) {
 
   hoveredFeature = newHoveredFeature;
 });
-
-
-// Search function is in file "aq_searchbar.js". 
-initSearch(); 
 
 
 ///////////////////////////////////////////
@@ -359,6 +354,7 @@ function initPopUp()
     closer.blur();
     selectedFeature.setStyle(pointStyle(selectedFeature));
     selectedFeature = null;
+    filterFeatures(); // in aq_legend.js
     return false;
   };
   
@@ -410,6 +406,7 @@ function initPopUp()
           // reset point style and open sidebar for selected feature 
           selectedFeature.setStyle(pointStyle(selectedFeature));
           openSidebar(feature);
+          filterFeatures(); // in aq_legend.js
           selectedFeature = feature;
         }
 
@@ -452,15 +449,13 @@ function initPopUp()
             closerAQ.blur();
           };
 
-          console.log("feature: ", feature); 
-          console.log("selectedFeature: ", selectedFeature); 
           if(selectedFeature) {
             selectedFeature.setStyle(pointStyle(selectedFeature));
           }
           
           selectedFeature = feature;
           selectedFeature.setStyle(pointStyleLarge(selectedFeature));
-
+          filterFeatures(); // in aq_legend.js
           overlayAQ.setPosition(coordinate);
           return;
         }

@@ -22,4 +22,4 @@ The topic is: "Entwicklung eines Prototyps einer Messgeräteerweiterung zur Erfa
 ## Starting the web application
 1. You must have Python on your computer. 
 2. Navigate to the downloaded files in the command prompt and start a local server with: ```python -m http.server 8000```
-3. Open a new window in your browser and type: http://localhost:8000/DEMO.html
+3. Open a new window in your browser and type: http://localhost:8000/website/DEMO.html 

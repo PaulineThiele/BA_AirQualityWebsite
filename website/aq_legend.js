@@ -91,7 +91,7 @@ function getAQKeyByLevel(airQuality) {
  * Controls the visibility of stations on the map, due to the status of the checkboxes. 
  */
 function filterFeatures() {
-  
+
   // Get all keys that are checked 
   const checkboxes = document.querySelectorAll('.legendCheckbox');
   const visibleKeys = Array.from(checkboxes)
@@ -99,42 +99,39 @@ function filterFeatures() {
     .map(checkbox => checkbox.id.replace('checkbox-', ''));
 
   // Control visibility
-  vectorSource_air.getFeatures().forEach(feature => {
-    const airQuality = feature.get('Luftqualitätsindex');
+  
+  // get all features from the map 
+  vectorSourceAir.getFeatures().forEach(olfeature => {
+    
+    const airQuality = olfeature.get('Luftqualitätsindex');
     var aqLevel = getAQKeyByLevel(airQuality);
 
-    if (visibleKeys.includes(aqLevel)) {
-      
-      // Show feature
-      feature.setStyle(null); //--------------------------------------> das hier versteh ich noch nicht so ganz--> schauste dir morgen nochmal an 
-      console.log("selectedFeature: ", selectedFeature); 
-      /*if(feature == selectedFeature) {
-        feature.setStyle(pointStyleLarge(feature)); 
-      } else {
-        feature.setStyle(pointStyle(feature));
-      }*/
+    //console.log("legNew: ",newestFeatures);
+    
+    newestFeatures.forEach(newfeature => {
 
-
-    } else {
-      
-      // Hide feature
-      feature.setStyle(new ol.style.Style({display: 'none'})); 
-      if (selectedFeature && selectedFeature !== feature) // Checks if a feature is selected and it is not the currently processed feature
-      {
-        selectedFeature.setStyle(pointStyleLarge(selectedFeature)); 
-      }
-      if(selectedFeature === feature && document.getElementById("sidebar").style.width != "0") // Checks if the selected feature is the current feature and the sidebar is open 
-      {
-        selectedFeature = null;
-        document.getElementById("sidebar").style.width = "0";
-        document.getElementById("searchbar").classList.remove("left"); 
+      if(newfeature['id'] === olfeature.getId()) {
         
-        // Hide popup if its open 
-        var overlay = map.getOverlayById('popup_overlay');
-        if (overlay) {
-          overlay.setPosition(undefined);
+        if(!visibleKeys.includes(aqLevel)) {
+          console.log("leg: ", olfeature, selectedFeature);
+          if(selectedFeature) {
+            selectedFeature.setStyle(pointStyleLarge(selectedFeature));
+          }
+          
+          if(olfeature === selectedFeature) {
+            closeAllPopups();
+            closeSidebar(olfeature);
+          } 
+          olfeature.setStyle(new ol.style.Style({display: 'none'}));
+        }
+        else {
+          olfeature.setStyle(null);
+
+          if(selectedFeature) {
+            selectedFeature.setStyle(pointStyleLarge(selectedFeature));
+          }
         }
       }
-    }
+    });
   });
 }

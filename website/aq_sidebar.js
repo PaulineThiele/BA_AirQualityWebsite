@@ -328,8 +328,10 @@ function createChart(latestFeatures){
  * @param {object} feature 
  */
 function openSidebar(feature) {
+  selectedFeature = feature;
 
-  feature.setStyle(pointStyleLarge(feature));
+  //feature.setStyle(pointStyleLarge(feature));
+  selectedFeature.setStyle(pointStyleLarge(selectedFeature));
   //map.render(); 
 
   // Zoom into map and center the station point on the left half of the screen.  
@@ -441,7 +443,7 @@ function openSidebar(feature) {
   //feature.setStyle(pointStyleLarge(feature));
   selectedFeature = feature;
   selectedFeature.setStyle(pointStyleLarge(selectedFeature)); 
-  map.render(); 
+  //map.render(); 
   console.log("der Style: ", selectedFeature.getStyle());
   //console.log("Feature Layer:", map.getLayers());
 }
@@ -556,7 +558,7 @@ function filterData() {
     const filteredPM25HM = filteredFeatures.map(f => f.properties["GM:PM2_5_Atm"]);
     const filteredPM10HM = filteredFeatures.map(f => f.properties["GM:PM10_Atm"]);
     const filteredNO2 = filteredFeatures.map(f => f.properties["NO2"]);
-    const filteredCO = filteredFeatures.map(f => f.properties["CO"]);
+    const filteredCO = filteredFeatures.map(f => f.properties["CO"] * 1000); // calculation from mg/m3 to μg/m³ 
 
     // refresh diagramm with data shown in correct time order
     myChart.data.labels = filteredDates.reverse();
@@ -729,5 +731,7 @@ function closeSidebar(feature) {
 
   // move searchbar back to the middle 
   document.getElementById("searchbar").classList.remove("left"); 
+
+  filterFeatures();
 }
   
