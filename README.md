@@ -17,7 +17,9 @@ This GitHub Repository includes:
 ## Context
 This Repository was created for my bachelors thesis. 
 The topic is: "Entwicklung eines Prototyps einer Messgeräteerweiterung zur Erfassung von Luftdaten und Darstellung der gemessenen Daten in einer Webanwendung" 
-(engl. "Development of a prototype of a measuring device extension for the acquisition of air data and display of the measured data in a web application")
+(engl. "Development of a prototype of a measuring device extension for the acquisition of air data and display of the measured data in a web application")  
+The data from the point located at the Schillerallee 1 are based on air quality measurements of the sensors (SDS011, HM3301, Grove - Mehrkanal-Gassensor V2). 
+The data from the other point, located at Käthe-Kollwitz-Str., are only example data and were created to test the functionality of the web application. 
 
 ## Starting the web application
 1. You must have Python on your computer. 

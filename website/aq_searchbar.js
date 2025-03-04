@@ -17,12 +17,12 @@
  * Output: dropdown list 
  */ 
 
-var liSelected,
-    index = -1;
+  var liSelected,
+      index = -1;
 
-const searchbar = document.getElementById("searchbar");
-const searchInput = document.getElementById('searchInput'), 
-      searchResults = document.getElementById('searchResults');
+  const searchbar = document.getElementById("searchbar");
+  const searchInput = document.getElementById('searchInput'), 
+        searchResults = document.getElementById('searchResults');
 
 // event listener for searchbar input field 
 searchInput.addEventListener('input', function () {

@@ -3,64 +3,55 @@
  * 
  * Shows the map as a background and includes layers. 
  * 
- * Author: Alberding GmbH, Pauline Thiele 
+ * Author: Pauline Thiele 
  */
 
 
-///////////////////////////////////////////
-// init map    -- from Alberding GmbH
+
+/**
+ * Initialize OpenStreetMap (OSM).
+ */
 
 var layers = [];
 var overlays = [];
 var zoom = 13;
 var center = [13.6299684773, 52.3211886595];
 var rotation = 0;
+
 layers.push(new ol.layer.Tile({ 
-    title: 'Alberding',
+    title: 'OSM',
     type: 'base',
     source:new ol.source.XYZ({
         crossOrigin:null,
         maxZoom: 19,
-        url:"http://map.gnssonline.eu/default/{z}/{x}/{y}.png",
-        attributions:'<a href="//www.alberding.eu/">© Alberding GmbH</a>'
+        url:"http://map.gnssonline.eu/default/{z}/{x}/{y}.png"
     })
 }));
+
 var layergroup = new ol.layer.Group({'title': 'Karte', layers: layers});
 var overlayGroup = new ol.layer.Group({title: 'Überlagerung',layers: overlays});
+
 var mousePositionControl = new ol.control.MousePosition({  
   coordinateFormat: function(coordinate) {
       return ol.coordinate.format(coordinate, '{y}, {x}', 6);
     },
   projection: 'EPSG:4326',  className: 'map-mouse-position'
 });
+
 var map = new ol.Map({
   layers: [layergroup,overlayGroup],
   target: document.getElementById('map'),
   controls: ol.control.defaults().extend([new ol.control.ScaleLine(), new ol.control.FullScreen(), mousePositionControl]),
   view: new ol.View({center: ol.proj.transform(center,'EPSG:4326','EPSG:3857'),zoom: zoom,rotation: rotation,minZoom: 2,maxZoom: 23,})
 });
-var layerSwitcher = new ol.control.LayerSwitcher({tipLabel: 'Légende'});
+
+var layerSwitcher = new ol.control.LayerSwitcher({tipLabel: 'Legende'});
 map.addControl(layerSwitcher);
 
-///////////////////////////////////////////
-// include WFS    -- from Alberding GmbH
 
-const vectorSource = new ol.source.Vector({
-  format: new ol.format.GeoJSON(),
-  //url: 'https://pauline:bachelor2025@smarttrack.gnssonline.eu/cgi-bin/smartTrack.cgi?mod=Status&geojson=1',
-  //url: './points.geojson',
-});
-
-const smarttrack = new ol.layer.Vector({
-  source: vectorSource,
-  title: "SmartTrack WFS"
-});
-
-overlayGroup.getLayers().push(smarttrack);
-
-
-///////////////////////////////////////////
-// include air quality    -- from Pauline Thiele
+/**
+ * Includes Air Quality Layer. 
+ */
 const dataFile = './hour_created_geodata copy.geojson';
 
 const vectorSourceAir = new ol.source.Vector({
@@ -69,7 +60,8 @@ const vectorSourceAir = new ol.source.Vector({
   url: dataFile,
 });
 
-//var colorList = {excellent:'#42CAFF', good: '#9CFD8C', moderate: '#F0E641', weak: '#FF5050', poor: '#960032', unknown:'grey',};
+
+// colors for AQ Legend
 var colorList = {excellent:'#4d9221', good: '#a1d76a', moderate: '#f7f7f7', weak: '#e9a3c9', poor: '#c51b7d', unknown:'grey',};
 
 /**
@@ -284,43 +276,21 @@ map.on('pointermove', function(evt) {
 });
 
 
-///////////////////////////////////////////
-// Popup handler
+
+/**
+ * Manages AQ Popup visualisation. 
+ */
 function initPopUp()
 {
-  // -- from Alberding GmbH
-  var container = document.getElementById('popup');
-  var containerAQ = document.getElementById('popup-AQ');
-  var content = document.getElementById('popup-content');
-
-  // -- from Pauline Thiele 
-  var contentAQ = document.getElementById('popup-content-AQ'),
-      closer = document.getElementById('popup-closer'),
+  var containerAQ = document.getElementById('popup-AQ'), 
       closerAQ = document.getElementById('popup-closer-AQ'); 
 
-  // -- from Pauline Thiele 
   const popupTable = document.getElementById('popupTable'),
         colHM3301 = document.getElementById('colHM3301'),
         tableLastRow = document.getElementById('tableLastRow');
-
-  /**
-    * Create an overlay to anchor the popup to the map.
-    * -- from Alberding GmbH
-    */
-  var overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
-    element: container,
-    autoPan: true,
-    autoPanMargin: 35,
-    autoPanAnimation: {
-      duration: 250
-    }, 
-    id: 'popup_overlay'
-  }));
-  map.addOverlay(overlay);
   
   /**
     * Create an overlay for AQ to anchor the popup to the map.
-    * -- from Pauline Thiele
     */
   var overlayAQ = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
     element: containerAQ,
@@ -336,18 +306,6 @@ function initPopUp()
   /**
     * Add a click handler to hide the popup.
     * @return {boolean} Don't follow the href.
-    * -- from Alberding GmbH
-    */
-  closer.onclick = function() {
-    overlay.setPosition(undefined);
-    closer.blur();
-    return false;
-  };
-
-  /**
-    * Add a click handler to hide the popup.
-    * @return {boolean} Don't follow the href.
-    * -- from Pauline Thiele 
     */
   closerAQ.onclick = function() {
     overlayAQ.setPosition(undefined);
@@ -360,42 +318,27 @@ function initPopUp()
   
   /**
     * Add a click handler to the map to render the popup.
-    * -- from Alberding GmbH, Pauline Thiele --> sections are marked with comments 
     */
   map.on('singleclick', function(evt) {
     var coordinate = evt.coordinate;
     var result = map.forEachFeatureAtPixel(evt.pixel,
-        function(feature, layer) {
-          return { feature, layer };
-        });
-      
-      // -- from Pauline Thiele begin 
+      function(feature, layer) {
+        return { feature, layer };
+    });
 
-      if (result) {
-        var feature = result.feature;
-        var layer = result.layer;
+    if (result) {
+      var feature = result.feature;
+      var layer = result.layer;
 
-        // Perform actions with the feature and layer
-        console.log(feature.getProperties());
-      } else {
-        console.log('No feature found at the clicked position.');
-      }
- 
-    /* 
-    var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
-        coordinate, 'EPSG:3857', 'EPSG:4326'));*/
-
-    /* 
-    if (feature && feature.get('description') !== undefined) {
-      content.innerHTML = feature.get('description');
-      overlay.setPosition(coordinate);
-      return;
+      // Perform actions with the feature and layer
+      console.log(feature.getProperties());
+    } else {
+      console.log('No feature found at the clicked position.');
     }
-    else if */
     
     const sidebarwidth = document.getElementById("sidebar").offsetWidth;
 
-    if (feature && feature.getProperties() !== undefined) { // -- from Alberding GmbH 
+    if (feature && feature.getProperties() !== undefined) {
       if (layer === smarttrackAir) {
         
         console.log("sidebarwidth: ", sidebarwidth); 
@@ -459,31 +402,7 @@ function initPopUp()
           overlayAQ.setPosition(coordinate);
           return;
         }
-      } else {
-        content.innerHTML = ''; 
-        contentAQ.innerHTML = ''; 
-        
-        // -- from Pauline Thiele end 
-        
-        // Popup logic for points.geojson -- from Alberding GmbH 
-        var table = "<table class=\"mapMarkerInfo\">\n";
-        var yourobject = feature.getProperties();
-        let valid = 0;
-        for (let key in yourobject)
-        {
-          if(key != 'geometry') {
-            table = table + "<tr><td>" + key + "</td><td>" + yourobject[key] + "</td></tr>\n";
-            valid = 1;
-          }
-        }
-        if(valid)
-        {
-          table = table + "<table>\n";
-          content.innerHTML = table;
-          overlay.setPosition(coordinate);
-        }
-        console.log(feature);
-      }
+      } 
     }  
   });
 }
